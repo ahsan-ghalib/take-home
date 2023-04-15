@@ -23,10 +23,12 @@ return new class extends Migration
             $table->text('url_to_image')->nullable();
             $table->dateTime('published_at');
             $table->json('source');
+            $table->softDeletes();
             $table->timestamps();
 
             $table->fullText(['description', 'content']);
             $table->index(['category', 'title', 'published_at']);
+
         });
     }
 
