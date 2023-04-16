@@ -16,12 +16,22 @@ class NewsFeedController extends Controller
     {
         $newsFeedPreferences = auth()->user()->newsFeedPreference;
 
-        $query = News::query()
-            ->whereIn('category', $newsFeedPreferences->category)
-            ->orWhereIn('source', $newsFeedPreferences->source)
-            ->orWhereIn('source', $newsFeedPreferences->author);
+        $query = News::query();
+
+        if (isset($newsFeedPreferences?->category)) {
+            $query->whereIn('category', $newsFeedPreferences?->category);
+        }
+
+        if (isset($newsFeedPreferences?->source)) {
+            $query->whereIn('source', $newsFeedPreferences?->source);
+        }
+
+        if (isset($newsFeedPreferences?->author)) {
+            $query->whereIn('source', $newsFeedPreferences?->author);
+        }
 
         $news = $query->paginate(20);
+
 
         if ($news->total() > 0) {
             return response()->json([
