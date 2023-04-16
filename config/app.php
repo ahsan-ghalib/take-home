@@ -181,6 +181,21 @@ return [
         'key' => env('THE_GUARDIAN_API_KEY'),
         'url' => env('THE_GUARDIAN_API_URL', 'https://content.guardianapis.com/search'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | The New York Times API
+    |--------------------------------------------------------------------------
+    |
+    | This service provider is used to access news articles from The New York Times API
+    |
+    */
+
+    'ny_times_api' => [
+        'key' => env('NY_TIMES_API_KEY'),
+        'url' => env('NY_TIMES_API_URL', 'https://api.nytimes.com/svc/search/v2/articlesearch.json'),
+    ],
+
     'providers' => [
 
         /*
