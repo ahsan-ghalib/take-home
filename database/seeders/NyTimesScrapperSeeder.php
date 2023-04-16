@@ -12,6 +12,9 @@ class NyTimesScrapperSeeder extends Seeder
      */
     public function run(): void
     {
-        (new NyTimesScrapperService())->execute();
+        (new NyTimesScrapperService([
+            'pageSize' => 0,
+            'page' => 10
+        ]))->execute();
     }
 }
