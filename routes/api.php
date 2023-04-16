@@ -21,11 +21,6 @@ Route::post('register', RegisterControler::class);
 
 Route::apiResource('news', NewsController::class)->only(['index', 'show']);
 
-Route::get('test', function () {
-//    echo phpinfo();
-        return (new \App\Services\NewsApiScrapperService())->execute();
-});
-
 Route::middleware('auth:sanctum')->group(function () {
 
 });
