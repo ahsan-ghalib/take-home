@@ -31,7 +31,7 @@ enum CategoryEnum: string
     case Biography = 'Biography';
     case Birth_Notice = 'Birth Notice';
     case Blog = 'Blog';
-    case Brief = 'Brief';
+    case Briefing = 'briefing';
     case Caption = 'Caption';
     case Chronology = 'Chronology';
     case Column = 'Column';

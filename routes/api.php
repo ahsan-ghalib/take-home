@@ -3,6 +3,8 @@
 use App\Http\Controllers\API\Auth\LoginControler;
 use App\Http\Controllers\API\Auth\RegisterControler;
 use App\Http\Controllers\API\NewsController;
+use App\Http\Controllers\API\NewsFeedController;
+use App\Http\Controllers\API\UserNewsFeedPreferenceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,7 +24,12 @@ Route::post('register', RegisterControler::class);
 Route::apiResource('news', NewsController::class)->only(['index', 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::controller(UserNewsFeedPreferenceController::class)->group(function () {
+        Route::get('news-feed-preferences', 'show');
+        Route::put('news-feed-preferences', 'update');
+    });
 
+    Route::get('news-feeds', NewsFeedController::class);
 });
 
 
