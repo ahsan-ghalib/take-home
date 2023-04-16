@@ -24,6 +24,7 @@ class News extends Model
         'url_to_image',
         'published_at',
         'source',
+        'scraped_from',
     ];
 
     protected $casts = [

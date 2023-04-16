@@ -41,7 +41,7 @@ return [
     |
     */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug' => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -153,6 +153,20 @@ return [
     | this array to grant expanded functionality to your applications.
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Autoloaded Service Providers
+    |--------------------------------------------------------------------------
+    |
+    | This service provider is used to access news articles from the News API
+    |
+    */
+
+    'news_api' => [
+        'key' => env('NEWS_API_KEY'),
+        'url' => env('NEWS_API_URL', 'https://newsapi.org/v2/'),
+    ],
 
     'providers' => [
 
