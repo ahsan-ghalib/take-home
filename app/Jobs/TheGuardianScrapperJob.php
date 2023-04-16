@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\CategoryEnum;
+use App\Enums\SourceEnum;
 use App\Models\News;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -68,7 +69,7 @@ class TheGuardianScrapperJob extends BaseScrapperJob
                 'url' => $article['webUrl'],
                 'published_at' => Carbon::parse($article['webPublicationDate']),
                 'source' => json_encode(['url' => $article['apiUrl']]),
-                'scraped_from' => 'the-guardian-api',
+                'scraped_from' => SourceEnum::The_Guardian->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

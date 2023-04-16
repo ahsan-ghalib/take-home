@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\SourceEnum;
 use App\Models\News;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -61,7 +62,7 @@ class NewsApiScrapperJob extends BaseScrapperJob
                 'url_to_image' => $article['urlToImage'],
                 'published_at' => Carbon::parse($article['publishedAt']),
                 'source' => json_encode($article['source']),
-                'scraped_from' => 'news-api',
+                'scraped_from' => SourceEnum::News_Api->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

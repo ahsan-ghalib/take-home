@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\CategoryEnum;
+use App\Enums\SourceEnum;
 use App\Models\News;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -66,7 +67,7 @@ class NyTimesScrapperJob extends BaseScrapperJob
                 'url' => $article['web_url'],
                 'published_at' => Carbon::parse($article['pub_date']),
                 'source' => json_encode($article['multimedia']),
-                'scraped_from' => 'nyt-api',
+                'scraped_from' => SourceEnum::New_York_Times->value,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

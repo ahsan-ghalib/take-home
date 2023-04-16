@@ -15,21 +15,18 @@ return new class extends Migration
         Schema::create('news', function (Blueprint $table) {
             $table->id();
             $table->string('slug');
-            $table->string('author')->default('N/A')->nullable();
-            $table->string('category');
-            $table->string('title');
-            $table->text('description');
-            $table->text('content');
+            $table->string('author')->nullable()->index();
+            $table->string('category')->index();
+            $table->string('title')->index();
+            $table->text('description')->fulltext();
+            $table->text('content')->fulltext();
             $table->text('url');
             $table->text('url_to_image')->nullable();
             $table->dateTime('published_at');
-            $table->json('source');
-            $table->string('scraped_from');
+            $table->json('source')->index();
+            $table->string('scraped_from')->index();
             $table->softDeletes();
             $table->timestamps();
-
-            $table->fullText(['description', 'content']);
-            $table->index(['category', 'title', 'published_at']);
             $table->unique('slug');
 
         });
