@@ -2,21 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Enums\CategoryEnum;
 use App\Models\News;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 
-class NewsApiScrapperJob implements ShouldQueue
+class NewsApiScrapperJob extends BaseScrapperJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected array $query;
     protected string $url;
@@ -32,30 +25,18 @@ class NewsApiScrapperJob implements ShouldQueue
         $this->url = $url . 'top-headlines';
     }
 
-    /**
-     * Execute the job.
-     * @throws GuzzleException
-     */
     public function handle(): void
     {
-        $client = new Client();
         $totalPages = null;
 
         while (!$totalPages || $this->query['page'] <= $totalPages) {
-            $response = $client->request('GET', $this->url, [
-                'query' => $this->query,
-                'headers' => [
-                    'Accept' => 'application/json',
-                ]
-            ]);
-
-            $data = json_decode($response->getBody(), true);
+            $data = $this->makeHttpsRequest();
 
             if ($totalPages === null) {
                 $totalPages = ceil($data['totalResults'] / $this->query['pageSize']);
             }
 
-            $this->insertArticles($data['articles'], $this->query['category']);
+            $this->prepareForInsert($data['articles'], $this->query['category']);
 
             $this->query['page']++;
 
@@ -64,10 +45,10 @@ class NewsApiScrapperJob implements ShouldQueue
         }
     }
 
-    public function insertArticles(array $articles, string $category): void
+    public function prepareForInsert(array $articles, string $category)
     {
-        $articles = collect($articles)->transform(function ($article) use ($category){
-            $slug = mb_strtolower($category) . '/'. Carbon::parse($article["publishedAt"])->format("Y/M/d") .'/'. str_replace(" ", "-", $article["title"]);
+        $articles = collect($articles)->transform(function ($article) use ($category) {
+            $slug = mb_strtolower($category) . '/' . Carbon::parse($article["publishedAt"])->format("Y/M/d") . '/' . str_replace(" ", "-", $article["title"]);
 
             return [
                 'slug' => $slug,
@@ -86,17 +67,6 @@ class NewsApiScrapperJob implements ShouldQueue
             ];
         })->toArray();
 
-        News::query()
-        ->upsert($articles, 'slug', [
-            'author',
-            'category',
-            'title',
-            'description',
-            'content',
-            'url',
-            'url_to_image',
-            'published_at',
-            'source',
-        ]);
+        $this->insertArticles($articles);
     }
 }

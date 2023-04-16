@@ -14,9 +14,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class NyTimesScrapperJob implements ShouldQueue
+class NyTimesScrapperJob extends BaseScrapperJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected array $query;
     protected string $url;
@@ -32,29 +31,18 @@ class NyTimesScrapperJob implements ShouldQueue
         $this->url = $url;
     }
 
-    /**
-     * Execute the job.
-     * @throws GuzzleException
-     */
     public function handle(): void
     {
-        $client = new Client();
         $totalPages = null;
 
         while (!$totalPages || $this->query['page'] <= $totalPages) {
-            $response = $client->request('GET', $this->url, [
-                'query' => $this->query,
-                'headers' => [
-                    'Accept' => 'application/json',
-                ]
-            ]);
+            $data = $this->makeHttpsRequest()['response'];
 
-            $data = json_decode($response->getBody(), true)['response'];
             if ($totalPages === null) {
                 $totalPages = ceil($data['meta']['hits'] / $this->query['pageSize']);
             }
 
-            $this->insertArticles($data['docs'], $this->query['category']);
+            $this->prepareForInsert($data['docs'], $this->query['category']);
 
             $this->query['page']++;
 
@@ -63,7 +51,7 @@ class NyTimesScrapperJob implements ShouldQueue
         }
     }
 
-    public function insertArticles(array $articles, string $category): void
+    public function prepareForInsert(array $articles, string $category): void
     {
         $articles = collect($articles)->transform(function ($article) use ($category) {
             $slug = mb_strtolower(str_replace(' ', '-', $article['type_of_material'])) . '/'. Carbon::parse($article['pub_date'])->format('Y/M/d') .'/'. str_replace(' ', '-', $article['headline']['main']);
@@ -85,17 +73,6 @@ class NyTimesScrapperJob implements ShouldQueue
 
         })->toArray();
 
-        News::query()
-            ->upsert($articles, 'slug', [
-                'author',
-                'category',
-                'title',
-                'description',
-                'content',
-                'url',
-                'url_to_image',
-                'published_at',
-                'source',
-            ]);
+        $this->insertArticles($articles);
     }
 }
