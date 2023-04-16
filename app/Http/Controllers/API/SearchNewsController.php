@@ -21,8 +21,9 @@ class SearchNewsController extends Controller
         $query = News::query();
 
         if (isset($request->keyword)) {
-            $query->where('title', 'like', '%{$request->keyword}%')
-                ->whereRaw("MATCH(content, description) AGAINST(? IN BOOLEAN MODE)", array($request->keyword));
+            $query->orWhere('title', 'like', '%' . $request->keyword . '%')
+                ->orWhereRaw("MATCH(content) AGAINST(? IN BOOLEAN MODE)", array($request->keyword))
+                ->orWhereRaw("MATCH(`description`) AGAINST(? IN BOOLEAN MODE)", array($request->keyword));
         }
 
         if (isset($request->date_from, $request->date_to)) {
@@ -47,7 +48,7 @@ class SearchNewsController extends Controller
         }
 
         return response()->json([
-            'message' => 'Error fetching news',
+            'message' => 'No data to show',
             'data' => null,
         ], SymfonyResponse::HTTP_NOT_FOUND);
     }
