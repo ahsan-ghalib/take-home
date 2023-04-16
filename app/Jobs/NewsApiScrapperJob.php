@@ -29,7 +29,7 @@ class NewsApiScrapperJob implements ShouldQueue
     public function __construct(array $query, string $url)
     {
         $this->query = $query;
-        $this->url = $url;
+        $this->url = $url . 'top-headlines';
     }
 
     /**
@@ -40,10 +40,9 @@ class NewsApiScrapperJob implements ShouldQueue
     {
         $client = new Client();
         $totalPages = null;
-        $articles = [];
 
-        while ($totalPages === null || $this->query['page'] <= $totalPages) {
-            $response = $client->request('GET', $this->url . 'top-headlines', [
+        while (!$totalPages || $this->query['page'] <= $totalPages) {
+            $response = $client->request('GET', $this->url, [
                 'query' => $this->query,
                 'headers' => [
                     'Accept' => 'application/json',
@@ -67,25 +66,37 @@ class NewsApiScrapperJob implements ShouldQueue
 
     public function insertArticles(array $articles, string $category): void
     {
-        collect($articles)->transform(function ($article) use ($category){
-            $slug = '{$category}/{Carbon::parse($article["publishedAt"])->format("Y/M/d")}/{str_replace(" ", "-", $article["title"])}';
+        $articles = collect($articles)->transform(function ($article) use ($category){
+            $slug = mb_strtolower($category) . '/'. Carbon::parse($article["publishedAt"])->format("Y/M/d") .'/'. str_replace(" ", "-", $article["title"]);
+
             return [
                 'slug' => $slug,
                 'author' => $article['author'],
                 'category' => $category,
                 'title' => $article['title'],
-                'description' => $article['description'],
-                'content' => $article['content'],
+                'description' => $article['description'] ?? 'N/A',
+                'content' => $article['content'] ?? 'N/A',
                 'url' => $article['url'],
                 'url_to_image' => $article['urlToImage'],
-                'published_at' => $article['publishedAt'],
-                'source' => $article['source'],
+                'published_at' => Carbon::parse($article['publishedAt']),
+                'source' => json_encode($article['source']),
+                'scraped_from' => 'news-api',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         })->toArray();
 
         News::query()
-        ->upsert($articles, 'slug');
+        ->upsert($articles, 'slug', [
+            'author',
+            'category',
+            'title',
+            'description',
+            'content',
+            'url',
+            'url_to_image',
+            'published_at',
+            'source',
+        ]);
     }
 }
