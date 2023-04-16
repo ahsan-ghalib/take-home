@@ -156,7 +156,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Autoloaded Service Providers
+    | The News API
     |--------------------------------------------------------------------------
     |
     | This service provider is used to access news articles from the News API
@@ -168,6 +168,19 @@ return [
         'url' => env('NEWS_API_URL', 'https://newsapi.org/v2/'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | The Guardian API
+    |--------------------------------------------------------------------------
+    |
+    | This service provider is used to access news articles from The Guardian API
+    |
+    */
+
+    'the_guardian_api' => [
+        'key' => env('THE_GUARDIAN_API_KEY'),
+        'url' => env('THE_GUARDIAN_API_URL', 'https://content.guardianapis.com/search'),
+    ],
     'providers' => [
 
         /*
