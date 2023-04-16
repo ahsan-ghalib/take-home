@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\Auth\LoginControler;
 use App\Http\Controllers\API\Auth\RegisterControler;
+use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\NewsController;
 use App\Http\Controllers\API\NewsFeedController;
 use App\Http\Controllers\API\SearchNewsController;
@@ -24,13 +25,13 @@ Route::post('register', RegisterControler::class);
 
 Route::apiResource('news', NewsController::class)->only(['index', 'show']);
 Route::post('search-news', SearchNewsController::class);
+Route::get('dropdowns', DropdownController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::controller(UserNewsFeedPreferenceController::class)->group(function () {
         Route::get('news-feed-preferences', 'show');
         Route::put('news-feed-preferences', 'update');
     });
-
     Route::get('news-feeds', NewsFeedController::class);
 });
 
