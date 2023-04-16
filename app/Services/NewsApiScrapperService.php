@@ -8,23 +8,23 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class NewsApiScrapperService
 {
+    protected array $query;
+    public function __construct(array $query)
+    {
+        $this->query = $query;
+    }
     /**
      * @throws GuzzleException
      */
     public function execute()
     {
-        $currentPage = 1;
-        $pageSize = 100;
-
         $newsApi = config('app.news_api');
 
         foreach (NewsApiCategoryEnum::array() as $category) {
-            NewsApiScrapperJob::dispatch([
+            NewsApiScrapperJob::dispatch(array_merge($this->query, [
                 'category' => $category,
-                'apiKey' => $newsApi['key'],
-                'pageSize' => $pageSize,
-                'page' => $currentPage
-            ], $newsApi['url']);
+                'apiKey' => $newsApi['key']
+            ]), $newsApi['url']);
         }
     }
 }

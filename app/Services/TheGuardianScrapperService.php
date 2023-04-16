@@ -9,22 +9,23 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class TheGuardianScrapperService
 {
+    protected array $query;
+    public function __construct(array $query)
+    {
+        $this->query = $query;
+    }
+
     /**
      * @throws GuzzleException
      */
     public function execute()
     {
-        $currentPage = 1;
-        $pageSize = 100;
-
         $theGuardianApi = config('app.the_guardian_api');
 
-        TheGuardianScrapperJob::dispatch([
+        TheGuardianScrapperJob::dispatch(array_merge($this->query, [
             'category' => '',
             'api-key' => $theGuardianApi['key'],
-            'pageSize' => $pageSize,
-            'page' => $currentPage
-        ], $theGuardianApi['url']);
+        ]), $theGuardianApi['url']);
 
     }
 }

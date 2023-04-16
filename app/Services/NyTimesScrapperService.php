@@ -10,22 +10,23 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class NyTimesScrapperService
 {
+    protected array $query;
+    public function __construct(array $query)
+    {
+        $this->query = $query;
+    }
+
     /**
      * @throws GuzzleException
      */
     public function execute()
     {
-        $currentPage = 0;
-        $pageSize = 10;
-
         $theGuardianApi = config('app.ny_times_api');
 
-        NyTimesScrapperJob::dispatch([
+        NyTimesScrapperJob::dispatch(array_merge($this->query, [
             'category' => '',
             'api-key' => $theGuardianApi['key'],
-            'pageSize' => $pageSize,
-            'page' => $currentPage
-        ], $theGuardianApi['url']);
+        ]), $theGuardianApi['url']);
 
     }
 }
