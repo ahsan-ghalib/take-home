@@ -14,9 +14,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class TheGuardianScrapperJob implements ShouldQueue
+class TheGuardianScrapperJob extends BaseScrapperJob
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected array $query;
     protected string $url;
@@ -38,24 +37,16 @@ class TheGuardianScrapperJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $client = new Client();
         $totalPages = null;
 
         while (!$totalPages || $this->query['page'] <= $totalPages) {
-            $response = $client->request('GET', $this->url, [
-                'query' => $this->query,
-                'headers' => [
-                    'Accept' => 'application/json',
-                ]
-            ]);
-
-            $data = json_decode($response->getBody(), true)['response'];
+            $data = $this->makeHttpsRequest()['response'];
 
             if ($totalPages === null) {
                 $totalPages = ceil($data['total'] / $this->query['pageSize']);
             }
 
-            $this->insertArticles($data['results'], $this->query['category']);
+            $this->prepareForInsert($data['results'], $this->query['category']);
 
             $this->query['page']++;
 
@@ -64,7 +55,7 @@ class TheGuardianScrapperJob implements ShouldQueue
         }
     }
 
-    public function insertArticles(array $articles, string $category): void
+    public function prepareForInsert(array $articles, string $category): void
     {
         $articles = collect($articles)->transform(function ($article) use ($category) {
             return [
@@ -84,17 +75,6 @@ class TheGuardianScrapperJob implements ShouldQueue
 
         })->toArray();
 
-        News::query()
-            ->upsert($articles, 'slug', [
-                'author',
-                'category',
-                'title',
-                'description',
-                'content',
-                'url',
-                'url_to_image',
-                'published_at',
-                'source',
-            ]);
+        $this->insertArticles($articles);
     }
 }
